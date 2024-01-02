@@ -1,0 +1,13 @@
+# opções experimentais
+chrome_options.add_experimental_option('prefs', {
+    # alterar o local padrão para download
+    'download.default_directory': 'C:\Users\Maarcos\Documents\PythonProjects\Python-Projects\downloads',
+    # notificar para o navegador sobre a alteração
+    'download.directory_upgrade': True,
+    # desabilitar a confirmação de download
+    'download.prompt_for_download': False,
+    # desabilitar notificações
+    'profile.default_content_setting_values.notifications': 2,
+    # permitir multiplos downloads
+    'profile.default_content_setting_values.automatic_downloads': 1,
+})
