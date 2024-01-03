@@ -4,6 +4,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from time import sleep
+import random
 
 def iniciar_driver():
     chrome_options = Options()
@@ -22,6 +23,13 @@ def iniciar_driver():
     return driver
 
 driver = iniciar_driver()
+
+def digitar_naturalmente(texto, elemento):
+    for letra in texto:
+        elemento.send_keys(letra)
+        sleep(random.randint(1,3)/30)
+
+
 # entrar no site
 driver.get("https://cursoautomacao.netlify.app")
 
@@ -52,6 +60,33 @@ sleep(1)
 # clicar no botão validar
 botao_validar = driver.find_element(By.ID, 'validarDesafio2')
 botao_validar.click()
+
+driver.execute_script("window.scrollTo(0, 900);")
+sleep(1)
+
+checkbox_conversivel = driver.find_element(By.XPATH, "//input[@onclick='activateSucessCheckbox1()']")
+sleep(1)
+checkbox_conversivel.click()
+
+sleep(1)
+
+checkbox_offroad = driver.find_element(By.XPATH, "//input[@id='offroadcheckbox']")
+sleep(1)
+checkbox_offroad.click()
+
+driver.execute_script("window.scrollTo(0, 1200);")
+sleep(1)
+
+paragrafo = driver.find_element(By.XPATH, "//textarea[@id='campoparagrafo']")
+sleep(1)
+
+texto = ('''Poema é um gênero textual (forma de redação) escrito em versos e estrofes. 
+        É uma ferramenta de expressão artística e emocional. A palavra deriva do verbo grego poiéin,
+         que significa "fazer, criar, compor". 
+        Trata-se de um gênero bastante variável, seja em relação ao seu estilo, extensão ou temática.''')
+
+digitar_naturalmente(texto, paragrafo)
+
 
 input("")
 driver.close()
