@@ -1,4 +1,6 @@
 # opções experimentais
+
+
 chrome_options.add_experimental_option('prefs', {
     # alterar o local padrão para download
     'download.default_directory': 'C:\Users\Maarcos\Documents\PythonProjects\Python-Projects\downloads',
@@ -109,3 +111,436 @@ driver.execute_script("window.scrollTo(0, 1500);")
 sleep(5)
 # Rolar X quantidade em pixels(subir)
 driver.execute_script("window.scrollTo(0, -1500);")
+
+
+# BAIXAR MÚLTIPLAS IMAGENS
+
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service as ChromeService
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
+from time import sleep
+
+
+
+def iniciar_driver():
+    chrome_options = Options()
+    arguments = ['--lang=pt-BR', '--window-size=1200,600', '--icognito']
+    for argument in arguments:
+        chrome_options.add_argument(argument)
+
+    chrome_options.add_experimental_option('prefs', {
+        'download.prompt_for_download': False,
+        'profile.default_content_setting_values.notifications': 2,
+        'profile.default_content_setting_values.automatic_downloads': 1,
+    })
+    driver = webdriver.Chrome(service=ChromeService(
+        ChromeDriverManager().install()),options=chrome_options)
+    
+    return driver
+
+driver = iniciar_driver()
+
+driver.get("https://cursoautomacao.netlify.app")
+sleep(1)
+
+driver.execute_script("window.scrollTo(0, 1500);")
+sleep(1)
+
+imagens = driver.find_elements(By.XPATH, "//img[@class='img-thumbnail']")
+contador = 1
+for imagem in imagens:
+    with open(f'imagem{contador}.jpg', 'wb') as arquivo:
+        arquivo.write(imagem.screenshot_as_png)
+        sleep(1)
+    contador += 1
+
+input('')
+
+# MUDAR DE JANELA/ABA
+
+
+driver.get("https://cursoautomacao.netlify.app")
+sleep(1)
+janela_inicial = driver.current_window_handle
+
+driver.execute_script("window.scrollTo(0, 900);")
+sleep(1)
+
+bt_abrir_aba = driver.find_element(By.XPATH, "//button[text()='Abrir aba']")
+sleep(1)
+driver.execute_script('arguments[0].click()', bt_abrir_aba)
+sleep(1)
+
+janelas = driver.window_handles
+for janela in janelas:
+    if janela not in janela_inicial:
+        driver.switch_to.window(janela)
+        sleep(2)
+        digitar_senha = driver.find_element(By.XPATH, "//input[@id='senha']")
+        sleep(2)
+        digitar_senha.send_keys('Curso mestre pythonista é shooowww!!!')
+        sleep(1)
+        driver.close()
+
+driver.switch_to.window(janela_inicial)
+
+
+# LIDANDO COM IFRAME
+
+iframe = driver.find_element(By.XPATH, "//iframe[@src='https://cursoautomacao.netlify.app/desafios.html']")
+sleep(1)
+driver.switch_to.frame(iframe)
+sleep(1)
+
+driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+sleep(2)
+
+campo_depoimento = driver.find_element(By.XPATH, "//textarea[@name='campo_depoimento']")
+sleep(1)
+campo_depoimento.send_keys('Shooooowwww!!!!!')
+
+driver.switch_to.default_content()
+sleep(2)
+
+driver.execute_script("window.scrollTo(0, document.body.scrollTop);")
+sleep(2)
+
+
+# LIDANDO COM ALERTAS 
+
+# situação 1
+# encontrar o campo de digitar nome
+campo_nome = driver.find_element(By.ID, 'nome')
+sleep(1)
+# escrer seu nome
+campo_nome.send_keys('Marcos Rogério')
+sleep(1)
+# encontrar botão alerta
+bt_alerta = driver.find_element(By.ID, 'buttonalerta')
+sleep(1)
+# clicar no botão alerta
+bt_alerta.click()
+# clicar em OK para fechar a janela
+alerta1 = driver.switch_to.alert
+sleep(1)
+alerta1.accept()
+sleep(1)
+
+# situação 2
+# encontrar o campo de digitar nome
+campo_nome = driver.find_element(By.ID, 'nome')
+sleep(1)
+# escrer seu nome
+campo_nome.send_keys('Marcos Rogério')
+sleep(1)
+# encontrar e clicar no botão confirmar
+bt_confirmar = driver.find_element(By.ID, 'buttonconfirmar')
+sleep(1)
+bt_confirmar.click()
+sleep(1)
+# clicar em ok ou cancelar na aba do alerta
+alerta2 = driver.switch_to.alert
+sleep(1)
+alerta2.accept()
+sleep(1)
+
+# situação 3
+# encontrar o campo de digitar nome
+campo_nome = driver.find_element(By.ID, 'nome')
+sleep(1)
+# escrever seu nome
+campo_nome.send_keys('Marcos Rogério')
+sleep(1)
+# encontrar e clicar no botao fazer pergunta
+bt_pesquisar = driver.find_element(By.ID, 'botaoPrompt')
+sleep(1)
+bt_pesquisar.click()
+sleep(1)
+# digitar na janela de alerta um dia da semana
+alerta3 = driver.switch_to.alert
+sleep(2)
+alerta3.send_keys('Sexta')
+sleep(2)
+# confirmar ou cancelar
+alerta3.accept()
+sleep(1)
+# confirmar para fechar
+alerta3.accept()
+sleep(1)
+
+
+#SIMULANDO AÇÕES DO MOUSE
+
+bt_direito = driver.find_element(By.ID, 'botao-direito')
+sleep(1)
+chain = ActionChains(driver)
+chain.context_click(bt_direito).pause(2).send_keys(
+    Keys.DOWN).pause(2).send_keys(Keys.DOWN).pause(2).send_keys(
+        Keys.DOWN).pause(2).send_keys(Keys.DOWN).pause(2).click().perform()
+
+
+# MANEIRAS DE ESPERAR QUE UM ELEMENTO CARREGUE
+
+1. sleep()
+2. wait implícito:
+    driver = iniciar_driver()
+    driver.implicitly_wait()
+3. wait explícito:
+    wait = WebDriverWait(
+        driver,
+        10,
+        poll_frequency=1,
+        ignored_exceptions=[
+            NoSuchElementException,
+            ElementNotVisibleException,
+            ElementNotSelectableException,
+        ]
+    )
+    
+    try:
+        element = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, "myDynamicElement")))
+    finally:
+        driver.quit()
+
+
+# CRIAR EXECUTÁVEL
+
+import sys
+import os
+from cx_Freeze import setup, Executable
+
+# Definir o que deve ser incluído na pasta final
+arquivos = ['dados.txt', 'musicas/']
+# Saida de arquivos
+configuracao = Executable(
+    script='app.py',
+    icon='rede.ico'
+)
+# Configurar o executável
+setup(
+    name='Automatizador de login',
+    version='1.0',
+    description='Este programa automatizar o login deste site',
+    author='Jhonatan de Souza',
+    options={'build_exe':{
+        'include_files': arquivos,
+        'include_msvcr': True
+    }},
+    executables=[configuracao]
+)
+
+
+# COMANDOS MÁQUINA VIRTUAL
+
+- CRIAR: 
+	cria uma nova pasta e abre o terminal dentro dessa pasta;
+	python -m venv NomeAmbienteVirtual
+	dir - confirmar
+- ATIVAR:
+	NomeAmbienteVirtual\scripts\activate
+
+
+- CRIAR PROJETO SCRAPY: 
+	abrir terminal
+	pip install scrapy
+	scrapy startproject NomeProjeto
+	cd NomePasta
+	criar projeto dentro da pasta Spider
+
+
+# CÓDIGO PARA CRIAR SCRAPY
+
+
+import scrapy
+
+
+class QuotesToScrapeSpider(scrapy.Spider):
+    name = 'frasebot'
+    def start_requests(self):
+        urls = ['https://quotes.toscrape.com/']
+        for url in urls:
+            yield scrapy.Request(url=url, callback=self.parse)
+
+    
+
+    def parse(self, response):
+        with open('pagina.html', 'wb') as arquivo:
+            arquivo.write(response.body)
+
+# RODAR SCRAPY:
+	abrir terminal
+	cd NomePasta(que contém o scrapy)
+	scrapy crawl NomeProjeto
+# TESTAR XPATH EM TEMPO REAL
+	abrir terminal
+	scrapy shell UrlSite
+	response.xpath().get()/getall()
+
+
+# TRATAR INFORMAÇÕES COM SCRAPY
+	dentro do arquivo items.py
+	from scrapy.loader.processors import MapCompose, TakeFirst, Join
+	
+
+# CONFIGURANDO ARQUIVO 'items.py'
+
+
+# Define here the models for your scraped items
+#
+# See documentation in:
+# https://docs.scrapy.org/en/latest/topics/items.html
+
+import scrapy
+from scrapy.loader.processors import MapCompose, TakeFirst, Join
+
+def processar_carctere_especial(valor):
+    return valor.replace(u"\u2019",'')
+
+
+def remover_espaco_em_branco(valor):
+    return valor.strip()
+
+
+def formatar_para_maiusculas(valor):
+    return valor.upper()
+
+
+class GoodReadsItem(scrapy.Item):
+    # define the fields for your item here like:
+    # name = scrapy.Field()
+    frase = scrapy.Field(
+        input_processor=MapCompose(processar_carctere_especial,remover_espaco_em_branco),
+        output_processor=TakeFirst()
+        )
+    autor = scrapy.Field(
+        input_processor=MapCompose(remover_espaco_em_branco, formatar_para_maiusculas),
+        output_processor=TakeFirst()
+        )
+    tags = scrapy.Field(
+        output_processor=Join(";")
+        )
+
+# CONFIGURANDO NO SPIDER
+
+import scrapy
+from scrapy.loader import ItemLoader
+from varrer_dados_sites.items import GoodReadsItem
+
+class GoodReadsSpider(scrapy.Spider):
+    name = 'frasebot'
+    def start_requests(self):
+        urls = ['https://quotes.toscrape.com/']
+        for url in urls:
+            yield scrapy.Request(url=url, callback=self.parse)
+
+
+def parse(self, response):
+        # with open('pagina.html', 'wb') as arquivo:
+        #     arquivo.write(response.body)
+        for elemento in response.xpath("//div[@class='quote']"):
+            loader = ItemLoader(item=GoodReadsItem(), selector=elemento, response=response)
+            loader.add_xpath('frase', ".//span[@class='text']/text()")
+            loader.add_xpath('autor', ".//small[@class='author']/text()")
+            loader.add_xpath('tags', ".//div[@class='tags']/a/text()")
+            yield loader.load_item()
+
+# CONECTAR A UM BANCO DE DADOS
+
+pipelines.py
+
+import sqlite3
+
+
+class SQLitePipeline(object):
+    def open_spider(self, spider):
+        self.connection = sqlite3.connect('proxies.db')
+        self.cursor = self.connection.cursor()
+        # Criar a tabel
+        self.cursor.execute('''
+            CREATE TABLE IF NOT EXISTS proxies(
+                ip_address TEXT NOT NULL PRIMARY KEY,
+                port NUMBER,
+                code TEXT,
+                country TEXT,
+                anonimity TEXT,
+                google TEXT,
+                https TEXT,
+                last_checked TEXT
+            )
+        ''')
+
+        self.connection.commit()
+
+    def close_spider(self, spider):
+        self.connection.close()
+
+    def process_item(self, item, spider):
+        self.cursor.execute('''
+            INSERT OR IGNORE INTO proxies(ip_address,port,code,country,anonimity,google,https,last_checked) VALUES(?,?,?,?,?,?,?,?)
+        ''', (
+            item.get('ip_address'),
+            item.get('port'),
+            item.get('code'),
+            item.get('country'),
+            item.get('anonimity'),
+            item.get('google'),
+            item.get('https'),
+            item.get('last_checked'),
+        ))
+        self.connection.commit()
+        return item
+
+
+settings.py
+
+ITEM_PIPELINES = {
+    'varredor_de_sites.pipelines.SQLitePipeline': 300,
+}
+
+
+# CHAMAR SCRAPY DIRETAMENTE
+
+# Configurando para chamar em outro arquivo
+import scrapy
+from scrapy.crawler import CrawlerProcess
+
+C
+Ó
+D
+I
+G
+O
+
+bot = CrawlerProcess(
+    settings={
+        "FEEDS": {
+            "itens.csv": {"format":"csv"}
+        }
+    }
+)
+
+bot.crawl(QuotesToScrapeSpider)
+bot.start()
+
+# SEGUNDO ARQUIVO
+
+from app import QuotesToScrapeSpider, CrawlerProcess
+
+resposta = input('Devo iniciar a automação? (s/n)')
+
+if resposta == 's':
+    bot = CrawlerProcess(
+    settings={
+        "FEEDS": {
+            "livros.json": {"format":"csv"}
+        }
+    }
+    )
+
+    bot.crawl(QuotesToScrapeSpider)
+    bot.start()
+else:
+    print('Não será iniciado a automação')

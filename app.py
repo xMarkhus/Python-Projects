@@ -6,6 +6,7 @@ from selenium.webdriver.chrome.options import Options
 from time import sleep
 import random
 
+
 def iniciar_driver():
     chrome_options = Options()
     arguments = ['--lang=pt-BR', '--window-size=800,600', '--icognito']
@@ -87,6 +88,4 @@ texto = ('''Poema é um gênero textual (forma de redação) escrito em versos e
 
 digitar_naturalmente(texto, paragrafo)
 
-
-input("")
 driver.close()
